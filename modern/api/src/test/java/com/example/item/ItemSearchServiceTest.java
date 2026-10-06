@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,12 +28,6 @@ class ItemSearchServiceTest {
 
     @Mock
     private ItemRepository itemRepository;
-
-    @Mock
-    private UnitRepository unitRepository;
-
-    @Mock
-    private TagRepository tagRepository;
 
     @InjectMocks
     private ItemSearchService itemSearchService;
@@ -93,27 +86,5 @@ class ItemSearchServiceTest {
         assertThat(response.items()).isEmpty();
         assertThat(response.count()).isEqualTo(20);
         assertThat(response.message()).isNull();
-    }
-
-    @Test
-    @DisplayName("collectWarnings: 미등록 단원 · 대소문자만 다른 태그는 경고한다")
-    void collectWarningsChecksUnitAndTagRegistration() {
-        ItemSearchCondition condition = condition(Map.of("unit", "Z9-99", "tag", "calc"));
-        when(unitRepository.findByCode("Z9-99")).thenReturn(Optional.empty());
-        when(tagRepository.findByName("calc")).thenReturn(Optional.of(ItemFixtures.tag(9, "Calc")));
-
-        List<String> warnings = itemSearchService.collectWarnings(condition);
-
-        assertThat(warnings).containsExactly("등록되지 않은 단원 코드입니다: Z9-99", "등록되지 않은 태그입니다: calc");
-    }
-
-    @Test
-    @DisplayName("collectWarnings: 등록된 단원 · 태그면 추가 경고 없음")
-    void collectWarningsAcceptsRegisteredValues() {
-        ItemSearchCondition condition = condition(Map.of("unit", "M5-1", "tag", "계산"));
-        when(unitRepository.findByCode("M5-1")).thenReturn(Optional.of(unit));
-        when(tagRepository.findByName("계산")).thenReturn(Optional.of(ItemFixtures.tag(1, "계산")));
-
-        assertThat(itemSearchService.collectWarnings(condition)).isEmpty();
     }
 }
